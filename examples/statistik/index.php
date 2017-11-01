@@ -1,7 +1,10 @@
-<?
-include('../../phpbahn.php');
+<?php
 
-include('settings.php');
+// include settings from cmd argument
+include($argv[1]);
+
+// include phpbahn class
+include(SETTING_PHPBAHN_CLASS);
 
 //Vorbereitung des Abrufs
 $bahn = new phpbahn(SETTING_APIKEY);
@@ -12,24 +15,28 @@ $bhf = array_shift($bhf);
 
 $zuege = $bahn->getTimetable($ibnr, time() );
 
-if(!count($zuege)){
-	echo "keine Verbindungen";
-	
-}
+if (count($zuege)){
 
-$datei = fopen('./data/statistik.csv', 'a');
+	foreach ($zuege as $zug) {
 
-foreach($zuege as $zug){
-	$zugname = $zug['zug']['klasse'].$zug['zug']['nummer'];
-	
-	if(in_array($zugname, SETTING_LINES) AND isset($zug['abfahrt']) ){
-		if(!isset($zug['abfahrt']['zeitGeplant'])){
-			$verspaetung = 0;
-		}else{
-			$verspaetung = $bahn->dateToTimestamp($zug['abfahrt']['zeitAktuell'])-$bahn->dateToTimestamp($zug['abfahrt']['zeitGeplant']);
-		}
-		fputcsv($datei, array(time(), $zugname, $verspaetung));
-		fwrite($datei, PHP_EOL);
+		$zugname = $zug['zug']['klasse'].$zug['zug']['nummer'];
 		
+		if (in_array($zugname, SETTING_LINES) AND isset($zug['ankunft']) ){
+			
+			$zeitGeplant = $zug['ankunft']['zeitGeplant'];
+
+			if(!isset($zug['ankunft']['zeitAktuell'])){
+				$verspaetung = 0;
+				$zeitAktuell = $zeitGeplant;
+			} else {
+				$zeitAktuell = $zug['ankunft']['zeitAktuell'];
+				$verspaetung = $bahn->dateToTimestamp($zeitAktuell)-$bahn->dateToTimestamp($zeitGeplant);
+			}
+			
+			// add result to output file
+			file_put_contents(SETTING_OUTPUT_FILE, date("Ymd").",".time().",".$zugname.",".$zeitAktuell.",".$zeitGeplant.",".$verspaetung."\n", FILE_APPEND);
+
+		}
 	}
 }
+?>
