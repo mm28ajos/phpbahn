@@ -113,78 +113,80 @@ class phpbahn {
 		if (isset($fahrten['s'])){
 			foreach($fahrten['s'] as $fahrt){
 				if (isset($fahrt['@attributes'])){
-					$id = $fahrt['@attributes']['id'];
-					unset($fahrt['@attributes']);
-					if(isset($fahrt['tl'])){            
-						$fahrt['zug']['typ'] = $fahrt['tl']['@attributes']['t'];
-						$fahrt['zug']['owner'] = $fahrt['tl']['@attributes']['o'];
-						$fahrt['zug']['klasse'] = $fahrt['tl']['@attributes']['c'];
-						$fahrt['zug']['nummer'] = $fahrt['tl']['@attributes']['n'];
-						
-						unset($fahrt['tl']);
-						
-						$cancelstates = array("a"=>"added", "c"=>"cancelled", "p"=>"planned");
-						
-						if(isset($fahrt['ar'])){
+					if (isset($fahrt['@attributes']['id'])){
+						$id = $fahrt['@attributes']['id'];
+						unset($fahrt['@attributes']);
+						if(isset($fahrt['tl'])){            
+							$fahrt['zug']['typ'] = $fahrt['tl']['@attributes']['t'];
+							$fahrt['zug']['owner'] = $fahrt['tl']['@attributes']['o'];
+							$fahrt['zug']['klasse'] = $fahrt['tl']['@attributes']['c'];
+							$fahrt['zug']['nummer'] = $fahrt['tl']['@attributes']['n'];
 							
-							if(isset($fahrt['ar']['@attributes']['l'])){
-								$fahrt['ankunft']['line'] = $fahrt['ar']['@attributes']['l'];
+							unset($fahrt['tl']);
+							
+							$cancelstates = array("a"=>"added", "c"=>"cancelled", "p"=>"planned");
+							
+							if(isset($fahrt['ar'])){
+								
+								if(isset($fahrt['ar']['@attributes']['l'])){
+									$fahrt['ankunft']['line'] = $fahrt['ar']['@attributes']['l'];
+								}
+								
+								$fahrt['ankunft']['zeitGeplant'] = $fahrt['ar']['@attributes']['pt'];
+								if(isset($sortAbweichung[$id]['ar']['@attributes']['ct'])){
+									$fahrt['ankunft']['zeitAktuell'] = $sortAbweichung[$id]['ar']['@attributes']['ct'];
+								}
+								
+								$fahrt['ankunft']['gleisGeplant'] = $fahrt['ar']['@attributes']['pp'];
+								if(isset($sortAbweichung[$id]['ar']['@attributes']['cp'])){
+									$fahrt['ankunft']['gleisAktuell'] = $sortAbweichung[$id]['ar']['@attributes']['cp'];
+								}
+								
+								$fahrt['ankunft']['routeGeplant'] = explode("|",$fahrt['ar']['@attributes']['ppth']);
+								if(isset($sortAbweichung[$id]['ar']['@attributes']['cpth'])){
+									$fahrt['ankunft']['routeAktuell'] = explode("|",$sortAbweichung[$id]['ar']['@attributes']['cpth']);
+								}
+								
+								if(isset($sortAbweichung[$id]['ar']['@attributes']['cs'])){
+									$fahrt['ankunft']['cancel'] = $cancelstates[$sortAbweichung[$id]['ar']['@attributes']['cs']];
+								}
+								
 							}
 							
-							$fahrt['ankunft']['zeitGeplant'] = $fahrt['ar']['@attributes']['pt'];
-							if(isset($sortAbweichung[$id]['ar']['@attributes']['ct'])){
-								$fahrt['ankunft']['zeitAktuell'] = $sortAbweichung[$id]['ar']['@attributes']['ct'];
+							
+							if(isset($fahrt['dp'])){
+								
+								if(isset($fahrt['dp']['@attributes']['l'])){
+									$fahrt['abfahrt']['line'] = $fahrt['dp']['@attributes']['l'];
+								}
+								
+								$fahrt['abfahrt']['zeitGeplant'] = $fahrt['dp']['@attributes']['pt'];
+								if(isset($sortAbweichung[$id]['dp']['@attributes']['ct'])){
+									$fahrt['abfahrt']['zeitAktuell'] = $sortAbweichung[$id]['dp']['@attributes']['ct'];
+								}
+								
+								$fahrt['abfahrt']['gleisGeplant'] = $fahrt['dp']['@attributes']['pp'];
+								if(isset($sortAbweichung[$id]['dp']['@attributes']['cp'])){
+									$fahrt['abfahrt']['gleisAktuell'] = $sortAbweichung[$id]['dp']['@attributes']['cp'];
+								}
+								
+								$fahrt['abfahrt']['routeGeplant'] = explode("|",$fahrt['dp']['@attributes']['ppth']);
+								if(isset($sortAbweichung[$id]['dp']['@attributes']['cpth'])){
+									$fahrt['abfahrt']['routeAktuell'] = explode("|",$sortAbweichung[$id]['dp']['@attributes']['cpth']);
+								}
+								
+								
+								if(isset($sortAbweichung[$id]['dp']['@attributes']['cs'])){
+									$fahrt['abfahrt']['cancel'] = $cancelstates[$sortAbweichung[$id]['dp']['@attributes']['cs']];
+								}
+								
 							}
 							
-							$fahrt['ankunft']['gleisGeplant'] = $fahrt['ar']['@attributes']['pp'];
-							if(isset($sortAbweichung[$id]['ar']['@attributes']['cp'])){
-								$fahrt['ankunft']['gleisAktuell'] = $sortAbweichung[$id]['ar']['@attributes']['cp'];
-							}
+							unset($fahrt['ar']);
+							unset($fahrt['dp']);
 							
-							$fahrt['ankunft']['routeGeplant'] = explode("|",$fahrt['ar']['@attributes']['ppth']);
-							if(isset($sortAbweichung[$id]['ar']['@attributes']['cpth'])){
-								$fahrt['ankunft']['routeAktuell'] = explode("|",$sortAbweichung[$id]['ar']['@attributes']['cpth']);
-							}
-							
-							if(isset($sortAbweichung[$id]['ar']['@attributes']['cs'])){
-								$fahrt['ankunft']['cancel'] = $cancelstates[$sortAbweichung[$id]['ar']['@attributes']['cs']];
-							}
-							
+							$sortFahrten[$id] = $fahrt;
 						}
-						
-						
-						if(isset($fahrt['dp'])){
-							
-							if(isset($fahrt['dp']['@attributes']['l'])){
-								$fahrt['abfahrt']['line'] = $fahrt['dp']['@attributes']['l'];
-							}
-							
-							$fahrt['abfahrt']['zeitGeplant'] = $fahrt['dp']['@attributes']['pt'];
-							if(isset($sortAbweichung[$id]['dp']['@attributes']['ct'])){
-								$fahrt['abfahrt']['zeitAktuell'] = $sortAbweichung[$id]['dp']['@attributes']['ct'];
-							}
-							
-							$fahrt['abfahrt']['gleisGeplant'] = $fahrt['dp']['@attributes']['pp'];
-							if(isset($sortAbweichung[$id]['dp']['@attributes']['cp'])){
-								$fahrt['abfahrt']['gleisAktuell'] = $sortAbweichung[$id]['dp']['@attributes']['cp'];
-							}
-							
-							$fahrt['abfahrt']['routeGeplant'] = explode("|",$fahrt['dp']['@attributes']['ppth']);
-							if(isset($sortAbweichung[$id]['dp']['@attributes']['cpth'])){
-								$fahrt['abfahrt']['routeAktuell'] = explode("|",$sortAbweichung[$id]['dp']['@attributes']['cpth']);
-							}
-							
-							
-							if(isset($sortAbweichung[$id]['dp']['@attributes']['cs'])){
-								$fahrt['abfahrt']['cancel'] = $cancelstates[$sortAbweichung[$id]['dp']['@attributes']['cs']];
-							}
-							
-						}
-						
-						unset($fahrt['ar']);
-						unset($fahrt['dp']);
-						
-						$sortFahrten[$id] = $fahrt;
 					}
 				}
 			}
