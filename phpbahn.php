@@ -9,8 +9,8 @@ class phpbahn {
 		$this->apikey = $apikey;
 		
 		if(strlen($apikey) < 5){
-			trigger_error("Fehler: Kein API-Key angegeben.", 256);
-			return false;
+			file_put_contents(SETTING_ERROR_FILE, date("Ymd").",".time().",Fehler: Keine API-Key angegeben\n", FILE_APPEND);
+                        exit(1);
 		}
 		
 		$this->apis = array("timetables" => array("url"=> "https://api.deutschebahn.com/timetables/v1/", "return" => "xml" ), "fahrplan-plus"=> array("url"=> "https://api.deutschebahn.com/fahrplan-plus/v1/", "return"=>"json" ));
@@ -35,8 +35,8 @@ class phpbahn {
 		$result = curl_exec($ch);
 
 		if (curl_errno($ch)) {
-			trigger_error('Fehler:' . curl_error($ch));
-			return false;
+			file_put_contents(SETTING_ERROR_FILE, date("Ymd").",".time()."Fehler:".curl_error($ch)."\n", FILE_APPEND);
+			exit(1);
 		}
 		curl_close ($ch);
 		
@@ -64,9 +64,8 @@ class phpbahn {
 		if(count($result) ){
 			
 			if(isset($result['error'])){
-				trigger_error("Fehler: ".$result['error']['description'], 256);
-				return;
-				
+				file_put_contents(SETTING_ERROR_FILE, date("Ymd").",".time().",Fehler: ".$result['error']['description']."\n", FILE_APPEND);
+				exit(1);
 			}
 			
 			
@@ -76,8 +75,8 @@ class phpbahn {
 				$stationen[$i]= $res;
 			}
 		}else{
-			trigger_error("Fehler: Keine Station gefunden", 256);
-			return;
+			file_put_contents(SETTING_ERROR_FILE, date("Ymd").",".time().",Fehler: Keine Station gefunden\n", FILE_APPEND);
+			exit(1);
 		}
 		
 		return $stationen;
